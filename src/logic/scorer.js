@@ -10,17 +10,25 @@ export function pickCuisine(answers) {
   return winners[Math.floor(Math.random() * winners.length)];
 }
 
-export function groupTally(allResults) {
+export function groupTally(players) {
+  const entries = Object.values(players).filter((p) => p.cuisine);
   const counts = {};
-  for (const cuisine of allResults) {
-    counts[cuisine] = (counts[cuisine] || 0) + 1;
+  for (const player of entries) {
+    counts[player.cuisine] = (counts[player.cuisine] || 0) + 1;
   }
   const maxCount = Math.max(...Object.values(counts));
   const winners = Object.keys(counts).filter((k) => counts[k] === maxCount);
+
+  const playerSummary = entries.map((p) => ({
+    name: p.name,
+    cuisine: p.cuisine,
+  }));
+
   return {
     counts,
     winner: winners[Math.floor(Math.random() * winners.length)],
     isTie: winners.length > 1,
     tiedOptions: winners,
+    playerSummary,
   };
 }

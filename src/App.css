@@ -341,3 +341,256 @@ body {
   min-width: 50px;
   text-align: right;
 }
+
+/* Lobby Screen */
+.lobby-screen {
+  text-align: center;
+}
+
+.lobby-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--primary);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: var(--card-bg);
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-active {
+  background: var(--primary);
+  color: white;
+}
+
+.lobby-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.lobby-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 14px 18px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  text-align: center;
+  color: var(--text);
+  background: var(--card-bg);
+  transition: border-color 0.2s;
+}
+
+.lobby-input:focus {
+  outline: none;
+  border-color: var(--secondary);
+}
+
+.room-code-input {
+  font-family: monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.count-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.lobby-error {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.start-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Waiting Room */
+.waiting-room {
+  text-align: center;
+}
+
+.room-code-display {
+  font-family: monospace;
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: 8px;
+  color: var(--primary);
+  margin: 12px 0 20px;
+}
+
+.share-btn {
+  background: var(--secondary);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow);
+  margin-bottom: 28px;
+}
+
+.share-btn:hover {
+  transform: scale(1.05);
+}
+
+.player-list {
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.player-list h3 {
+  text-align: center;
+  font-size: 1rem;
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+
+.player-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.player-me {
+  background: #e8faf8;
+}
+
+.player-empty {
+  color: var(--text-light);
+}
+
+.player-dot {
+  font-size: 0.7rem;
+}
+
+.player-you-tag {
+  font-size: 0.75rem;
+  background: var(--secondary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+.waiting-text {
+  color: var(--text-light);
+  font-size: 1rem;
+  margin-top: 16px;
+}
+
+/* My Result Waiting */
+.my-result-waiting {
+  text-align: center;
+}
+
+.waiting-progress {
+  margin: 24px 0;
+}
+
+.waiting-count {
+  font-size: 1rem;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.player-status-list {
+  text-align: left;
+  margin-top: 20px;
+}
+
+.player-status-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.player-status-icon {
+  font-size: 1.2rem;
+  min-width: 28px;
+  text-align: center;
+}
+
+.player-status-name {
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.player-status-text {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+/* Who Got What (Group Results) */
+.who-got-what {
+  margin-bottom: 24px;
+}
+
+.who-got-what h3 {
+  text-align: center;
+  font-size: 1rem;
+  color: var(--text-light);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.player-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.player-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card-bg);
+  padding: 6px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-size: 0.9rem;
+}
+
+.player-pick-emoji {
+  font-size: 1.1rem;
+}
+
+.player-pick-name {
+  font-weight: 600;
+}
+
+.player-pick-cuisine {
+  color: var(--text-light);
+}
