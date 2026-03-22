@@ -1,167 +1,121 @@
-import { useState, useEffect } from "react";
-import {
-  createRoom,
-  joinRoom,
-  subscribeToRoom,
-  submitVote,
-  startGame,
-  roomExists,
-} from "./lib/room";
-import LobbyScreen from "./components/LobbyScreen";
-import WaitingRoom from "./components/WaitingRoom";
+import { useState } from "react";
+import { options } from "./data/options";
 import VoteScreen from "./components/VoteScreen";
 import VoteResults from "./components/VoteResults";
 import "./App.css";
 
-const SCREENS = {
-  LOBBY: "lobby",
-  WAITING: "waiting",
-  VOTE: "vote",
-  RESULTS: "results",
-};
-
 export default function App() {
-  const [screen, setScreen] = useState(SCREENS.LOBBY);
-  const [roomCode, setRoomCode] = useState(null);
-  const [playerId, setPlayerId] = useState(null);
-  const [playerName, setPlayerName] = useState("");
-  const [isHost, setIsHost] = useState(false);
-  const [roomData, setRoomData] = useState(null);
+  const [screen, setScreen] = useState("setup"); // setup | handoff | vote | results
+  const [names, setNames] = useState(["", "", "", "", "", ""]);
+  const [currentPlayer, setCurrentPlayer] = useState(0);
+  const [votes, setVotes] = useState([]); // [{ name, vote }]
 
-  // Check URL for room code on mount
-  useEffect(() => {
-    const path = window.location.pathname.slice(1).toUpperCase();
-    if (path && /^[A-Z0-9]{4}$/.test(path)) {
-      setRoomCode(path);
-    }
-    const savedRoom = sessionStorage.getItem("gd_roomCode");
-    const savedPlayer = sessionStorage.getItem("gd_playerId");
-    const savedName = sessionStorage.getItem("gd_playerName");
-    const savedHost = sessionStorage.getItem("gd_isHost");
-    if (savedRoom && savedPlayer) {
-      setRoomCode(savedRoom);
-      setPlayerId(savedPlayer);
-      setPlayerName(savedName || "");
-      setIsHost(savedHost === "true");
-    }
-  }, []);
+  function addName() {
+    if (names.length < 10) setNames([...names, ""]);
+  }
 
-  // Subscribe to room
-  useEffect(() => {
-    if (!roomCode || !playerId) return;
-    return subscribeToRoom(roomCode, setRoomData);
-  }, [roomCode, playerId]);
+  function removeName() {
+    if (names.length > 2) setNames(names.slice(0, -1));
+  }
 
-  // Auto-transition
-  useEffect(() => {
-    if (!roomData || !playerId) return;
+  function updateName(i, val) {
+    const copy = [...names];
+    copy[i] = val;
+    setNames(copy);
+  }
 
-    const players = roomData.players ? Object.values(roomData.players) : [];
-    const myPlayer = roomData.players?.[playerId];
-    const allVoted = players.length > 0 && players.every((p) => p.vote);
+  function startVoting() {
+    const filled = names.map((n, i) => n.trim() || `Person ${i + 1}`);
+    setNames(filled);
+    setCurrentPlayer(0);
+    setVotes([]);
+    setScreen("handoff");
+  }
 
-    if (allVoted && players.length >= 2) {
-      setScreen(SCREENS.RESULTS);
-      return;
-    }
+  function handleReady() {
+    setScreen("vote");
+  }
 
-    if (roomData.started && screen === SCREENS.WAITING && !myPlayer?.vote) {
-      setScreen(SCREENS.VOTE);
-      return;
-    }
+  function handleVote(optionKey) {
+    const newVotes = [...votes, { name: names[currentPlayer], vote: optionKey }];
+    setVotes(newVotes);
 
-    if (myPlayer?.vote && screen === SCREENS.VOTE) {
-      setScreen(SCREENS.RESULTS);
-    }
-  }, [roomData, playerId, screen]);
-
-  // Restore state on reload
-  useEffect(() => {
-    if (!roomData || !playerId || screen !== SCREENS.LOBBY) return;
-    const myPlayer = roomData.players?.[playerId];
-    if (!myPlayer) return;
-
-    const players = Object.values(roomData.players);
-    const allVoted = players.every((p) => p.vote);
-
-    if (allVoted || myPlayer.vote) {
-      setScreen(SCREENS.RESULTS);
-    } else if (roomData.started) {
-      setScreen(SCREENS.VOTE);
+    if (currentPlayer < names.length - 1) {
+      setCurrentPlayer(currentPlayer + 1);
+      setScreen("handoff");
     } else {
-      setScreen(SCREENS.WAITING);
+      setScreen("results");
     }
-  }, [roomData, playerId]);
-
-  async function handleCreateRoom(name, playerCount) {
-    const code = await createRoom(playerCount);
-    const pid = await joinRoom(code, name);
-    setRoomCode(code);
-    setPlayerId(pid);
-    setPlayerName(name);
-    setIsHost(true);
-    sessionStorage.setItem("gd_roomCode", code);
-    sessionStorage.setItem("gd_playerId", pid);
-    sessionStorage.setItem("gd_playerName", name);
-    sessionStorage.setItem("gd_isHost", "true");
-    window.history.replaceState(null, "", "/" + code);
-    setScreen(SCREENS.WAITING);
-  }
-
-  async function handleJoinRoom(name, code) {
-    const exists = await roomExists(code);
-    if (!exists) throw new Error("Room not found");
-    const pid = await joinRoom(code, name);
-    setRoomCode(code);
-    setPlayerId(pid);
-    setPlayerName(name);
-    setIsHost(false);
-    sessionStorage.setItem("gd_roomCode", code);
-    sessionStorage.setItem("gd_playerId", pid);
-    sessionStorage.setItem("gd_playerName", name);
-    sessionStorage.setItem("gd_isHost", "false");
-    window.history.replaceState(null, "", "/" + code);
-    setScreen(SCREENS.WAITING);
-  }
-
-  async function handleVote(optionKey) {
-    await submitVote(roomCode, playerId, optionKey);
   }
 
   function handlePlayAgain() {
-    sessionStorage.clear();
-    setScreen(SCREENS.LOBBY);
-    setRoomCode(null);
-    setPlayerId(null);
-    setPlayerName("");
-    setIsHost(false);
-    setRoomData(null);
-    window.history.replaceState(null, "", "/");
+    setScreen("setup");
+    setCurrentPlayer(0);
+    setVotes([]);
   }
 
   return (
     <div className="app">
-      {screen === SCREENS.LOBBY && (
-        <LobbyScreen
-          initialRoomCode={roomCode}
-          onCreateRoom={handleCreateRoom}
-          onJoinRoom={handleJoinRoom}
+      {screen === "setup" && (
+        <div className="setup-screen">
+          <h1 className="title">Game-dibber</h1>
+          <p className="subtitle">Takeout vote for the fam</p>
+
+          <div className="names-section">
+            <div className="names-header">
+              <span>Who's eating? ({names.length})</span>
+              <div className="names-btns">
+                <button className="small-btn" onClick={removeName}>-</button>
+                <button className="small-btn" onClick={addName}>+</button>
+              </div>
+            </div>
+            {names.map((name, i) => (
+              <input
+                key={i}
+                type="text"
+                placeholder={`Person ${i + 1}`}
+                value={name}
+                onChange={(e) => updateName(i, e.target.value)}
+                className="name-input"
+              />
+            ))}
+          </div>
+
+          <button className="start-btn" onClick={startVoting}>
+            Start Voting
+          </button>
+        </div>
+      )}
+
+      {screen === "handoff" && (
+        <div className="handoff-screen">
+          <div className="handoff-emoji">
+            {currentPlayer === 0 ? "\uD83D\uDCF1" : "\uD83D\uDC49\uD83D\uDCF1"}
+          </div>
+          <h2 className="handoff-name">{names[currentPlayer]}</h2>
+          <p className="handoff-text">
+            {currentPlayer === 0
+              ? "You're up first!"
+              : "Pass the phone!"}
+          </p>
+          <p className="handoff-count">
+            {currentPlayer + 1} of {names.length}
+          </p>
+          <button className="start-btn" onClick={handleReady}>
+            I'm ready
+          </button>
+        </div>
+      )}
+
+      {screen === "vote" && (
+        <VoteScreen
+          playerName={names[currentPlayer]}
+          onVote={handleVote}
         />
       )}
-      {screen === SCREENS.WAITING && (
-        <WaitingRoom
-          roomCode={roomCode}
-          roomData={roomData}
-          playerId={playerId}
-          isHost={isHost}
-          onStartQuiz={() => startGame(roomCode)}
-        />
-      )}
-      {screen === SCREENS.VOTE && (
-        <VoteScreen playerName={playerName} onVote={handleVote} />
-      )}
-      {screen === SCREENS.RESULTS && roomData && (
-        <VoteResults roomData={roomData} onPlayAgain={handlePlayAgain} />
+
+      {screen === "results" && (
+        <VoteResults votes={votes} onPlayAgain={handlePlayAgain} />
       )}
     </div>
   );

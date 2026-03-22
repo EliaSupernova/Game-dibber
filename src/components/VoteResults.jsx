@@ -1,18 +1,15 @@
 import { options } from "../data/options";
 
-export default function VoteResults({ roomData, onPlayAgain }) {
-  const players = roomData?.players ? Object.values(roomData.players) : [];
-  const votes = players.filter((p) => p.vote);
-
-  // Tally votes
+export default function VoteResults({ votes, onPlayAgain }) {
+  // Tally
   const counts = {};
-  for (const p of votes) {
-    counts[p.vote] = (counts[p.vote] || 0) + 1;
+  for (const v of votes) {
+    counts[v.vote] = (counts[v.vote] || 0) + 1;
   }
 
   const maxCount = Math.max(...Object.values(counts), 0);
   const winners = Object.keys(counts).filter((k) => counts[k] === maxCount);
-  const winnerKey = winners[0]; // On tie, first alphabetically wins (host decides)
+  const winnerKey = winners[0];
   const winnerOpt = options.find((o) => o.key === winnerKey);
 
   const sortedOptions = [...options]
@@ -29,7 +26,7 @@ export default function VoteResults({ roomData, onPlayAgain }) {
             {counts[winnerKey]} vote{counts[winnerKey] !== 1 ? "s" : ""}
           </p>
           {winners.length > 1 && (
-            <p className="tie-note">Tie broken by host!</p>
+            <p className="tie-note">Tie! Host decides.</p>
           )}
         </div>
       )}
@@ -57,11 +54,11 @@ export default function VoteResults({ roomData, onPlayAgain }) {
 
       <div className="who-voted">
         <h3>Votes</h3>
-        {players.map((p, i) => {
-          const opt = options.find((o) => o.key === p.vote);
+        {votes.map((v, i) => {
+          const opt = options.find((o) => o.key === v.vote);
           return (
             <div key={i} className="voter-row">
-              <span className="voter-name">{p.name}</span>
+              <span className="voter-name">{v.name}</span>
               <span className="voter-pick">
                 {opt ? `${opt.emoji} ${opt.label}` : "..."}
               </span>
