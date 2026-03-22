@@ -43,8 +43,7 @@ export async function joinRoom(roomCode, playerName) {
   const playerRef = push(ref(database, `rooms/${roomCode}/players`));
   await set(playerRef, {
     name: playerName,
-    cuisine: null,
-    finishedAt: null,
+    vote: null,
   });
   return playerRef.key;
 }
@@ -57,10 +56,9 @@ export function subscribeToRoom(roomCode, callback) {
   return unsubscribe;
 }
 
-export async function submitResult(roomCode, playerId, cuisineKey) {
+export async function submitVote(roomCode, playerId, optionKey) {
   await update(ref(database, `rooms/${roomCode}/players/${playerId}`), {
-    cuisine: cuisineKey,
-    finishedAt: serverTimestamp(),
+    vote: optionKey,
   });
 }
 

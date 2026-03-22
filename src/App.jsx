@@ -1,40 +1,32 @@
 import { useState, useEffect } from "react";
-import { questions } from "./data/questions";
-import { pickCuisine, groupTally } from "./logic/scorer";
 import {
   createRoom,
   joinRoom,
   subscribeToRoom,
-  submitResult,
+  submitVote,
   startGame,
   roomExists,
 } from "./lib/room";
 import LobbyScreen from "./components/LobbyScreen";
 import WaitingRoom from "./components/WaitingRoom";
-import PlayerBanner from "./components/PlayerBanner";
-import ProgressBar from "./components/ProgressBar";
-import QuizQuestion from "./components/QuizQuestion";
-import MyResultWaiting from "./components/MyResultWaiting";
-import GroupResults from "./components/GroupResults";
+import VoteScreen from "./components/VoteScreen";
+import VoteResults from "./components/VoteResults";
 import "./App.css";
 
 const SCREENS = {
   LOBBY: "lobby",
   WAITING: "waiting",
-  QUIZ: "quiz",
-  MY_RESULT: "myResult",
-  GROUP_RESULTS: "groupResults",
+  VOTE: "vote",
+  RESULTS: "results",
 };
 
 export default function App() {
   const [screen, setScreen] = useState(SCREENS.LOBBY);
   const [roomCode, setRoomCode] = useState(null);
   const [playerId, setPlayerId] = useState(null);
+  const [playerName, setPlayerName] = useState("");
   const [isHost, setIsHost] = useState(false);
   const [roomData, setRoomData] = useState(null);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [playerAnswers, setPlayerAnswers] = useState([]);
-  const [myResult, setMyResult] = useState(null);
 
   // Check URL for room code on mount
   useEffect(() => {
@@ -42,76 +34,60 @@ export default function App() {
     if (path && /^[A-Z0-9]{4}$/.test(path)) {
       setRoomCode(path);
     }
-
-    // Restore session
     const savedRoom = sessionStorage.getItem("gd_roomCode");
     const savedPlayer = sessionStorage.getItem("gd_playerId");
+    const savedName = sessionStorage.getItem("gd_playerName");
     const savedHost = sessionStorage.getItem("gd_isHost");
     if (savedRoom && savedPlayer) {
       setRoomCode(savedRoom);
       setPlayerId(savedPlayer);
+      setPlayerName(savedName || "");
       setIsHost(savedHost === "true");
     }
   }, []);
 
-  // Subscribe to room data when we have a room code and player ID
+  // Subscribe to room
   useEffect(() => {
     if (!roomCode || !playerId) return;
-
-    const unsubscribe = subscribeToRoom(roomCode, (data) => {
-      setRoomData(data);
-    });
-
-    return unsubscribe;
+    return subscribeToRoom(roomCode, setRoomData);
   }, [roomCode, playerId]);
 
-  // Auto-transition based on room data changes
+  // Auto-transition
   useEffect(() => {
     if (!roomData || !playerId) return;
 
     const players = roomData.players ? Object.values(roomData.players) : [];
     const myPlayer = roomData.players?.[playerId];
-    const allFinished =
-      players.length > 0 && players.every((p) => p.cuisine !== null);
+    const allVoted = players.length > 0 && players.every((p) => p.vote);
 
-    // If game started and we're still in waiting room, go to quiz
-    if (roomData.started && screen === SCREENS.WAITING && !myPlayer?.cuisine) {
-      setScreen(SCREENS.QUIZ);
+    if (allVoted && players.length >= 2) {
+      setScreen(SCREENS.RESULTS);
       return;
     }
 
-    // If all players finished, show group results
-    if (allFinished && players.length >= 2) {
-      setScreen(SCREENS.GROUP_RESULTS);
+    if (roomData.started && screen === SCREENS.WAITING && !myPlayer?.vote) {
+      setScreen(SCREENS.VOTE);
       return;
     }
 
-    // If I finished but others haven't, show my result waiting
-    if (myPlayer?.cuisine && screen === SCREENS.QUIZ) {
-      setMyResult(myPlayer.cuisine);
-      setScreen(SCREENS.MY_RESULT);
+    if (myPlayer?.vote && screen === SCREENS.VOTE) {
+      setScreen(SCREENS.RESULTS);
     }
   }, [roomData, playerId, screen]);
 
-  // Restore screen state from session on room data load
+  // Restore state on reload
   useEffect(() => {
-    if (!roomData || !playerId) return;
-    if (screen !== SCREENS.LOBBY) return;
-
+    if (!roomData || !playerId || screen !== SCREENS.LOBBY) return;
     const myPlayer = roomData.players?.[playerId];
     if (!myPlayer) return;
 
     const players = Object.values(roomData.players);
-    const allFinished = players.every((p) => p.cuisine !== null);
+    const allVoted = players.every((p) => p.vote);
 
-    if (allFinished && players.length >= 2) {
-      setMyResult(myPlayer.cuisine);
-      setScreen(SCREENS.GROUP_RESULTS);
-    } else if (myPlayer.cuisine) {
-      setMyResult(myPlayer.cuisine);
-      setScreen(SCREENS.MY_RESULT);
+    if (allVoted || myPlayer.vote) {
+      setScreen(SCREENS.RESULTS);
     } else if (roomData.started) {
-      setScreen(SCREENS.QUIZ);
+      setScreen(SCREENS.VOTE);
     } else {
       setScreen(SCREENS.WAITING);
     }
@@ -122,9 +98,11 @@ export default function App() {
     const pid = await joinRoom(code, name);
     setRoomCode(code);
     setPlayerId(pid);
+    setPlayerName(name);
     setIsHost(true);
     sessionStorage.setItem("gd_roomCode", code);
     sessionStorage.setItem("gd_playerId", pid);
+    sessionStorage.setItem("gd_playerName", name);
     sessionStorage.setItem("gd_isHost", "true");
     window.history.replaceState(null, "", "/" + code);
     setScreen(SCREENS.WAITING);
@@ -136,51 +114,30 @@ export default function App() {
     const pid = await joinRoom(code, name);
     setRoomCode(code);
     setPlayerId(pid);
+    setPlayerName(name);
     setIsHost(false);
     sessionStorage.setItem("gd_roomCode", code);
     sessionStorage.setItem("gd_playerId", pid);
+    sessionStorage.setItem("gd_playerName", name);
     sessionStorage.setItem("gd_isHost", "false");
     window.history.replaceState(null, "", "/" + code);
     setScreen(SCREENS.WAITING);
   }
 
-  async function handleStartQuiz() {
-    await startGame(roomCode);
-  }
-
-  async function handleAnswer(tags) {
-    const newAnswers = [...playerAnswers, tags];
-
-    if (currentQuestion < questions.length - 1) {
-      setPlayerAnswers(newAnswers);
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      const cuisine = pickCuisine(newAnswers);
-      setMyResult(cuisine);
-      await submitResult(roomCode, playerId, cuisine);
-    }
+  async function handleVote(optionKey) {
+    await submitVote(roomCode, playerId, optionKey);
   }
 
   function handlePlayAgain() {
-    sessionStorage.removeItem("gd_roomCode");
-    sessionStorage.removeItem("gd_playerId");
-    sessionStorage.removeItem("gd_isHost");
+    sessionStorage.clear();
     setScreen(SCREENS.LOBBY);
     setRoomCode(null);
     setPlayerId(null);
+    setPlayerName("");
     setIsHost(false);
     setRoomData(null);
-    setCurrentQuestion(0);
-    setPlayerAnswers([]);
-    setMyResult(null);
     window.history.replaceState(null, "", "/");
   }
-
-  // Compute group data from room players
-  const groupData =
-    roomData?.players && screen === SCREENS.GROUP_RESULTS
-      ? groupTally(roomData.players)
-      : null;
 
   return (
     <div className="app">
@@ -191,43 +148,20 @@ export default function App() {
           onJoinRoom={handleJoinRoom}
         />
       )}
-
       {screen === SCREENS.WAITING && (
         <WaitingRoom
           roomCode={roomCode}
           roomData={roomData}
           playerId={playerId}
           isHost={isHost}
-          onStartQuiz={handleStartQuiz}
+          onStartQuiz={() => startGame(roomCode)}
         />
       )}
-
-      {screen === SCREENS.QUIZ && (
-        <div className="quiz-screen">
-          <PlayerBanner
-            playerNumber={
-              roomData?.players
-                ? Object.keys(roomData.players).indexOf(playerId) + 1
-                : 1
-            }
-            totalPlayers={
-              roomData?.players ? Object.keys(roomData.players).length : 1
-            }
-          />
-          <ProgressBar current={currentQuestion} total={questions.length} />
-          <QuizQuestion
-            question={questions[currentQuestion]}
-            onAnswer={handleAnswer}
-          />
-        </div>
+      {screen === SCREENS.VOTE && (
+        <VoteScreen playerName={playerName} onVote={handleVote} />
       )}
-
-      {screen === SCREENS.MY_RESULT && (
-        <MyResultWaiting myResult={myResult} roomData={roomData} />
-      )}
-
-      {screen === SCREENS.GROUP_RESULTS && groupData && (
-        <GroupResults groupData={groupData} onPlayAgain={handlePlayAgain} />
+      {screen === SCREENS.RESULTS && roomData && (
+        <VoteResults roomData={roomData} onPlayAgain={handlePlayAgain} />
       )}
     </div>
   );
