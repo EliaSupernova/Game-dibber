@@ -22,7 +22,6 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
 #root {
@@ -30,7 +29,6 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
 .app {
@@ -43,301 +41,314 @@ body {
   justify-content: center;
 }
 
-/* Intro Screen */
-.intro-screen {
+/* Title */
+.title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
   text-align: center;
 }
 
-.title {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--primary);
-  margin-bottom: 8px;
-}
-
 .subtitle {
-  font-size: 1.2rem;
-  color: var(--text-light);
-  margin-bottom: 40px;
-}
-
-.player-count {
-  margin-bottom: 32px;
-}
-
-.player-count label {
-  display: block;
   font-size: 1.1rem;
+  color: var(--text-light);
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+/* Setup Screen */
+.setup-screen {
+  text-align: center;
+}
+
+.names-section {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.names-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 12px;
   font-weight: 600;
 }
 
-.counter {
+.names-btns {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
+  gap: 8px;
 }
 
-.counter-btn {
-  width: 48px;
-  height: 48px;
+.small-btn {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 2px solid var(--primary);
   background: var(--card-bg);
   color: var(--primary);
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.counter-btn:hover {
+.small-btn:hover {
   background: var(--primary);
   color: white;
 }
 
-.counter-value {
-  font-size: 2.5rem;
-  font-weight: 800;
+.name-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1rem;
   color: var(--text);
-  min-width: 60px;
+  background: var(--card-bg);
+  margin-bottom: 8px;
 }
 
+.name-input:focus {
+  outline: none;
+  border-color: var(--secondary);
+}
+
+/* Handoff Screen */
+.handoff-screen {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.handoff-emoji {
+  font-size: 4rem;
+}
+
+.handoff-name {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.handoff-text {
+  font-size: 1.2rem;
+  color: var(--text-light);
+}
+
+.handoff-count {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+/* Start Button */
 .start-btn {
   background: var(--primary);
   color: white;
   border: none;
   padding: 16px 48px;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 700;
   border-radius: 50px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.15s;
   box-shadow: var(--shadow);
 }
 
 .start-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 25px rgba(255, 107, 107, 0.4);
 }
 
-/* Player Banner */
-.player-banner {
+.start-btn:active {
+  transform: scale(0.97);
+}
+
+/* Vote Screen */
+.vote-screen {
   text-align: center;
-  padding: 12px;
-  border-radius: 12px;
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 700;
+}
+
+.vote-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.vote-subtitle {
+  color: var(--text-light);
   margin-bottom: 20px;
 }
 
-/* Progress Bar */
-.progress-bar {
-  margin-bottom: 24px;
+.vote-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.progress-text {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin-bottom: 8px;
-  text-align: center;
-}
-
-.progress-track {
-  height: 8px;
-  background: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--secondary);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-/* Quiz Question */
-.quiz-question {
-  text-align: center;
-}
-
-.question-text {
-  font-size: 1.4rem;
-  margin-bottom: 24px;
-  line-height: 1.4;
-}
-
-.answers-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.vote-btn {
+  display: flex;
+  align-items: center;
   gap: 12px;
-}
-
-.answer-btn {
-  padding: 16px 12px;
+  padding: 16px;
   border: 2px solid #e0e0e0;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--card-bg);
-  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  text-align: left;
+  font-size: 1rem;
   color: var(--text);
-  font-weight: 500;
 }
 
-.answer-btn:hover {
+.vote-btn:hover {
   border-color: var(--secondary);
   background: #e8faf8;
-  transform: scale(1.03);
 }
 
-/* Player Result */
-.player-result {
-  text-align: center;
+.vote-btn:active {
+  transform: scale(0.97);
+  background: #d0f5f0;
 }
 
-.player-result-title {
-  font-size: 1.3rem;
-  color: var(--text-light);
-  margin-bottom: 16px;
-}
-
-.next-btn {
-  margin-top: 24px;
-  background: var(--secondary);
-  color: white;
-  border: none;
-  padding: 14px 36px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: var(--shadow);
-}
-
-.next-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 25px rgba(78, 205, 196, 0.4);
-}
-
-/* Result Card */
-.result-card {
-  background: var(--card-bg);
-  border-radius: 20px;
-  padding: 32px 24px;
-  box-shadow: var(--shadow);
-  border-top: 4px solid var(--accent);
-}
-
-.result-emoji {
-  font-size: 4rem;
-  margin-bottom: 12px;
-}
-
-.result-name {
-  font-size: 1.8rem;
+.vote-letter {
   font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.result-tagline {
   font-size: 1.1rem;
-  color: var(--text-light);
-  margin-bottom: 12px;
-  font-style: italic;
+  color: var(--primary);
+  min-width: 24px;
 }
 
-.result-area {
-  font-size: 0.95rem;
-  color: var(--secondary);
+.vote-emoji {
+  font-size: 1.6rem;
+}
+
+.vote-label {
+  display: flex;
+  flex-direction: column;
   font-weight: 600;
 }
 
-/* Group Results */
-.group-results {
+.vote-sub {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+/* Results */
+.vote-results {
   text-align: center;
 }
 
-.group-title {
-  font-size: 1.8rem;
+.winner-banner {
+  margin-bottom: 28px;
+}
+
+.winner-emoji {
+  font-size: 4rem;
+  margin-bottom: 8px;
+}
+
+.winner-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.winner-votes {
+  color: var(--secondary);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.tie-note {
   color: var(--primary);
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.vote-tally {
+  text-align: left;
   margin-bottom: 24px;
 }
 
-.winner-section {
-  margin-bottom: 32px;
-}
-
-.winner-section h2 {
-  font-size: 1.2rem;
-  color: var(--text-light);
-  margin-bottom: 16px;
-}
-
-.scoreboard {
-  margin-bottom: 32px;
-  text-align: left;
-}
-
-.scoreboard h3 {
-  text-align: center;
-  font-size: 1rem;
-  color: var(--text-light);
-  margin-bottom: 16px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.score-row {
+.tally-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 8px 12px;
   border-radius: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
-.score-winner {
+.tally-winner {
   background: #fff3cd;
 }
 
-.score-emoji {
-  font-size: 1.3rem;
+.tally-emoji {
+  font-size: 1.2rem;
   flex-shrink: 0;
 }
 
-.score-name {
+.tally-label {
   font-weight: 600;
+  font-size: 0.85rem;
   min-width: 70px;
-  font-size: 0.95rem;
 }
 
-.score-bar-track {
+.tally-bar-track {
   flex: 1;
-  height: 12px;
+  height: 10px;
   background: #e0e0e0;
-  border-radius: 6px;
+  border-radius: 5px;
   overflow: hidden;
 }
 
-.score-bar-fill {
+.tally-bar-fill {
   height: 100%;
   background: var(--secondary);
-  border-radius: 6px;
-  transition: width 0.5s ease;
+  border-radius: 5px;
+  transition: width 0.5s;
 }
 
-.score-winner .score-bar-fill {
+.tally-winner .tally-bar-fill {
   background: var(--primary);
 }
 
-.score-count {
-  font-size: 0.85rem;
-  color: var(--text-light);
-  min-width: 50px;
+.tally-count {
+  font-weight: 700;
+  min-width: 20px;
   text-align: right;
+}
+
+.who-voted {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.who-voted h3 {
+  text-align: center;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.voter-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 0.95rem;
+}
+
+.voter-name {
+  font-weight: 600;
+}
+
+.voter-pick {
+  color: var(--text-light);
 }

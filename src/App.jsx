@@ -1,109 +1,121 @@
 import { useState } from "react";
-import { questions } from "./data/questions";
-import { pickCuisine, groupTally } from "./logic/scorer";
-import IntroScreen from "./components/IntroScreen";
-import PlayerBanner from "./components/PlayerBanner";
-import ProgressBar from "./components/ProgressBar";
-import QuizQuestion from "./components/QuizQuestion";
-import PlayerResult from "./components/PlayerResult";
-import GroupResults from "./components/GroupResults";
+import { options } from "./data/options";
+import VoteScreen from "./components/VoteScreen";
+import VoteResults from "./components/VoteResults";
 import "./App.css";
 
-const SCREENS = {
-  INTRO: "intro",
-  QUIZ: "quiz",
-  PLAYER_RESULT: "playerResult",
-  GROUP_RESULTS: "groupResults",
-};
-
 export default function App() {
-  const [screen, setScreen] = useState(SCREENS.INTRO);
-  const [playerCount, setPlayerCount] = useState(6);
-  const [currentPlayer, setCurrentPlayer] = useState(1);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [playerAnswers, setPlayerAnswers] = useState([]);
-  const [allResults, setAllResults] = useState([]);
-  const [currentResult, setCurrentResult] = useState(null);
-  const [groupData, setGroupData] = useState(null);
+  const [screen, setScreen] = useState("setup"); // setup | handoff | vote | results
+  const [names, setNames] = useState(["", "", "", "", "", ""]);
+  const [currentPlayer, setCurrentPlayer] = useState(0);
+  const [votes, setVotes] = useState([]); // [{ name, vote }]
 
-  function handleStart(count) {
-    setPlayerCount(count);
-    setCurrentPlayer(1);
-    setCurrentQuestion(0);
-    setPlayerAnswers([]);
-    setAllResults([]);
-    setScreen(SCREENS.QUIZ);
+  function addName() {
+    if (names.length < 10) setNames([...names, ""]);
   }
 
-  function handleAnswer(tags) {
-    const newAnswers = [...playerAnswers, tags];
-
-    if (currentQuestion < questions.length - 1) {
-      setPlayerAnswers(newAnswers);
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      const cuisine = pickCuisine(newAnswers);
-      setCurrentResult(cuisine);
-      setScreen(SCREENS.PLAYER_RESULT);
-    }
+  function removeName() {
+    if (names.length > 2) setNames(names.slice(0, -1));
   }
 
-  function handleNextPlayer() {
-    const newAllResults = [...allResults, currentResult];
+  function updateName(i, val) {
+    const copy = [...names];
+    copy[i] = val;
+    setNames(copy);
+  }
 
-    if (currentPlayer < playerCount) {
-      setAllResults(newAllResults);
+  function startVoting() {
+    const filled = names.map((n, i) => n.trim() || `Person ${i + 1}`);
+    setNames(filled);
+    setCurrentPlayer(0);
+    setVotes([]);
+    setScreen("handoff");
+  }
+
+  function handleReady() {
+    setScreen("vote");
+  }
+
+  function handleVote(optionKey) {
+    const newVotes = [...votes, { name: names[currentPlayer], vote: optionKey }];
+    setVotes(newVotes);
+
+    if (currentPlayer < names.length - 1) {
       setCurrentPlayer(currentPlayer + 1);
-      setCurrentQuestion(0);
-      setPlayerAnswers([]);
-      setCurrentResult(null);
-      setScreen(SCREENS.QUIZ);
+      setScreen("handoff");
     } else {
-      const data = groupTally(newAllResults);
-      setGroupData(data);
-      setScreen(SCREENS.GROUP_RESULTS);
+      setScreen("results");
     }
   }
 
   function handlePlayAgain() {
-    setScreen(SCREENS.INTRO);
-    setCurrentPlayer(1);
-    setCurrentQuestion(0);
-    setPlayerAnswers([]);
-    setAllResults([]);
-    setCurrentResult(null);
-    setGroupData(null);
+    setScreen("setup");
+    setCurrentPlayer(0);
+    setVotes([]);
   }
 
   return (
     <div className="app">
-      {screen === SCREENS.INTRO && <IntroScreen onStart={handleStart} />}
+      {screen === "setup" && (
+        <div className="setup-screen">
+          <h1 className="title">Game-dibber</h1>
+          <p className="subtitle">Takeout vote for the fam</p>
 
-      {screen === SCREENS.QUIZ && (
-        <div className="quiz-screen">
-          <PlayerBanner
-            playerNumber={currentPlayer}
-            totalPlayers={playerCount}
-          />
-          <ProgressBar current={currentQuestion} total={questions.length} />
-          <QuizQuestion
-            question={questions[currentQuestion]}
-            onAnswer={handleAnswer}
-          />
+          <div className="names-section">
+            <div className="names-header">
+              <span>Who's eating? ({names.length})</span>
+              <div className="names-btns">
+                <button className="small-btn" onClick={removeName}>-</button>
+                <button className="small-btn" onClick={addName}>+</button>
+              </div>
+            </div>
+            {names.map((name, i) => (
+              <input
+                key={i}
+                type="text"
+                placeholder={`Person ${i + 1}`}
+                value={name}
+                onChange={(e) => updateName(i, e.target.value)}
+                className="name-input"
+              />
+            ))}
+          </div>
+
+          <button className="start-btn" onClick={startVoting}>
+            Start Voting
+          </button>
         </div>
       )}
 
-      {screen === SCREENS.PLAYER_RESULT && (
-        <PlayerResult
-          playerNumber={currentPlayer}
-          cuisineKey={currentResult}
-          onNext={handleNextPlayer}
-          isLast={currentPlayer === playerCount}
+      {screen === "handoff" && (
+        <div className="handoff-screen">
+          <div className="handoff-emoji">
+            {currentPlayer === 0 ? "\uD83D\uDCF1" : "\uD83D\uDC49\uD83D\uDCF1"}
+          </div>
+          <h2 className="handoff-name">{names[currentPlayer]}</h2>
+          <p className="handoff-text">
+            {currentPlayer === 0
+              ? "You're up first!"
+              : "Pass the phone!"}
+          </p>
+          <p className="handoff-count">
+            {currentPlayer + 1} of {names.length}
+          </p>
+          <button className="start-btn" onClick={handleReady}>
+            I'm ready
+          </button>
+        </div>
+      )}
+
+      {screen === "vote" && (
+        <VoteScreen
+          playerName={names[currentPlayer]}
+          onVote={handleVote}
         />
       )}
 
-      {screen === SCREENS.GROUP_RESULTS && (
-        <GroupResults groupData={groupData} onPlayAgain={handlePlayAgain} />
+      {screen === "results" && (
+        <VoteResults votes={votes} onPlayAgain={handlePlayAgain} />
       )}
     </div>
   );

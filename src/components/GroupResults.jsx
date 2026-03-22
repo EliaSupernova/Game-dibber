@@ -2,7 +2,7 @@ import { results } from "../data/results";
 import ResultCard from "./ResultCard";
 
 export default function GroupResults({ groupData, onPlayAgain }) {
-  const { counts, winner } = groupData;
+  const { counts, winner, playerSummary } = groupData;
 
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
 
@@ -14,6 +14,25 @@ export default function GroupResults({ groupData, onPlayAgain }) {
         <h2>Tonight you're eating...</h2>
         <ResultCard cuisineKey={winner} />
       </div>
+
+      {playerSummary && playerSummary.length > 0 && (
+        <div className="who-got-what">
+          <h3>Who got what</h3>
+          <div className="player-picks">
+            {playerSummary.map((p, i) => (
+              <div key={i} className="player-pick">
+                <span className="player-pick-emoji">
+                  {results[p.cuisine]?.emoji}
+                </span>
+                <span className="player-pick-name">{p.name}</span>
+                <span className="player-pick-cuisine">
+                  {results[p.cuisine]?.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="scoreboard">
         <h3>Scoreboard</h3>
